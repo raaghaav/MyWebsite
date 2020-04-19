@@ -1,0 +1,20 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.showcase{
+    background-image: linear-gradient(rgba(0,0,0,0),rgba(0,0,0,0.9)), url("../images/showcase_website.jpg");
+    height: 900px;
+    width: 100vw;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.main-heading{
+    text-align: center;
+    padding-top: 19rem;
+    font-size: 260%;
+    font-family: sans-serif;
+}
