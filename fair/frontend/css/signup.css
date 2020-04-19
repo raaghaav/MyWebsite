@@ -157,9 +157,12 @@ button.social-signin:active {
 }
 
 button.social-signin.facebook {
-  background: #32508E;
+  background: rgb(23, 25, 27);
 }
 
+.Normal-login{
+  color: white;
+}
 button.social-signin.twitter {
   background: #55ACEE;
 }
