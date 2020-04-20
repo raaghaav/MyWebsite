@@ -60,7 +60,23 @@ userSchema.pre("save", function () {
 });
 
 
-// I have not included createResetToken  and resetPasswordhandler 
+
+userSchema.methods.createToken = function () {
+  const token = crypto.randomBytes(32).toString("hex");
+  // user
+  this.resetToken = token
+  this.expiresIn = Date.now() + 10 * 1000 * 60;
+  // 
+  return token;
+}
+
+
+userSchema.methods.resetPasswordhelper = function (password, confirmPassword) {
+  this.password = password;
+  this.confirmPassword = confirmPassword;
+  this.resetToken = undefined;
+  this.expiresIn = undefined;
+}
 
 
 const userModel = mongoose.model("NewUserModel", userSchema);

@@ -18,3 +18,11 @@
     font-size: 260%;
     font-family: sans-serif;
 }
+
+.span-styler{
+    color: rgb(236, 239, 49);
+}
+
+.nav-item:hover{
+    border-bottom: 0.1rem solid yellow;
+}
