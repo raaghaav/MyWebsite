@@ -2,9 +2,9 @@ const mongoose = require("mongoose");      // mongoose => promise based library
 const cryto = require("crypto");
 
 // connection
-const secrets = require("../config/secrets");
+const config = require("../configs/config");
 mongoose
-  .connect(secrets.DB_LINK, {
+  .connect(config.DB_LINK, {
     useNewUrlParser: true,
     useCreateIndex: true,
     useUnifiedTopology: true,
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     minlength: 7,
     required: true,
-    select: false,
+    select: false, // all above keys are required but password nahi aayega b/c select : false 
   },
   confirmPassword: {
     type: String,
@@ -47,10 +47,9 @@ const userSchema = new mongoose.Schema({
     enum: ["admin", "user", "owner"],
     default: "user",
   },
-
-  resetToken: String,
+  
+  resetToken: String,     // added these 2 keys b/c for every user this will be used
   resetTokenExpires: Date
-
 });
 
 // hooks
@@ -61,21 +60,21 @@ userSchema.pre("save", function () {
 
 
 
-userSchema.methods.createToken = function () {
-  const token = crypto.randomBytes(32).toString("hex");
+userSchema.methods.createToken = function () {          // this method will be attached to every user
+  const token = crypto.randomBytes(32).toString("hex");   // token generate kiya 
   // user
-  this.resetToken = token
+  this.resetToken = token   // since this points to current document  & token ko user ke andar save kar diya 
   this.expiresIn = Date.now() + 10 * 1000 * 60;
   // 
-  return token;
+  return token; // jis email se req aayi thi uss par bhej diya   
 }
 
 
 userSchema.methods.resetPasswordhelper = function (password, confirmPassword) {
-  this.password = password;
-  this.confirmPassword = confirmPassword;
-  this.resetToken = undefined;
-  this.expiresIn = undefined;
+  this.password = password;  // updating pass of current user 
+  this.confirmPassword = confirmPassword; // updating ConfirmPass of current user  
+  this.resetToken = undefined;    // now after updating we don't require resetToken 
+  this.expiresIn = undefined;     // // now after updating we don't require expiresIn 
 }
 
 

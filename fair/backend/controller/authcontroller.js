@@ -1,9 +1,7 @@
-// signup
-//  user create
 const userModel = require("../model/userModel");
 const Email = require("../utility/email");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../configs/config");
+const { JWT_SECRET } = require("../configs/config");  // {} particular key nikalne ke liye
 
 async function signup(req, res) {
   try {
@@ -20,19 +18,19 @@ async function signup(req, res) {
 async function login(req, res) {
   try {
     const { email, password } = req.body;
-    const user = await userModel.findOne({ email }).select("+password");
+    const user = await userModel.findOne({ email }).select("+password"); // login ke liye pass jaruri hota hai therefore used select 
     // console.log(user);
     if (user) {
       if (password == user.password) {
         // jwt
-        const { _id } = user;
-        const token = jwt.sign({ id: _id }, JWT_SECRET, {
-          expiresIn: Date.now() + 1000 * 60 * 30
+        const { _id } = user;   // users main se _id nikal rahe hai "_id" user ki id hai jo predefined hai 
+        const token = jwt.sign({ id: _id }, JWT_SECRET, {  // giving "_id" as payload to jwt [.sign => is signature establishing from payload deafault also and secret key ]
+          expiresIn: Date.now() + 1000 * 60 * 30   // date.now => present + 30 min == token gets expired in 30 min from generation
         })
         res.status(200).json({
           status: "successfull",
           user,
-          token
+          token   // yeh token yahan se aage client ko bhej diya 
         })
       } else {
         throw new Error("user or password didn't match")
@@ -48,20 +46,20 @@ async function login(req, res) {
   }
 }
 // authenticate => user
-async function protectRoute(req, res, next) {
+async function protectRoute(req, res, next) {     // client ko verify karega 
   try {
     // headers 
-    if (req.headers && req.headers.authorization) {
-      const token = req.headers.authorization.split(" ").pop();
+    if (req.headers && req.headers.authorization) {     //  "authorization" key req.headers main hoti hai, => req.headers main authorization key se token nikal rahe hai 
+      const token = req.headers.authorization.split(" ").pop();  // token req.headers.authrization main aa jayega from bearer token
       // console.log(token)
 
       if (token) {
         const decryptedData = jwt.verify(token, JWT_SECRET);
-        if (decryptedData) {
-          const id = decryptedData.id;
+        if (decryptedData) { // decryptedData is true when user jwt is verified (decryptedData  matlab verify karna  )
+          const id = decryptedData.id; // we sent _id to token in login fn so we take out that _id 
           console.log(id);
-          // console.log(decryptedData)
-          req.id = id;
+          // console.log(decryptedData) 
+          req.id = id; // req par ek nayi key add kar di i.e. "id" [req.id] aur usme[req.id], decryptedData.id = const id ,  yeh id de di, now all other M.W fn can use that req.id
           next();
         } else {
           throw new Error("Invalid Token");
@@ -82,9 +80,9 @@ async function protectRoute(req, res, next) {
   }
 }
 // authorization
-async function isAdmin(req, res, next) {
+async function isAdmin(req, res, next) { 
   try {
-    const user = await userModel.findById(req.id);
+    const user = await userModel.findById(req.id); // user ko find kar lunga isse 
     if (user) {
       if (user.role == "admin") {
         next()
@@ -99,15 +97,14 @@ async function isAdmin(req, res, next) {
   }
 }
 
-function isAuthorized(roles) {
-  return async function (req, res, next) {
+function isAuthorized(roles) {     //  isAuthorized main saare roles aa rahe hai
+  return async function (req, res, next) { // yahan se fn return kar diya in planRouter for isAuthorized
     try {
-
-      const { id } = req;
-      const user = await userModel.findById(id);
+      const { id } = req;  // req se "id" aa jayegi  
+      const user = await userModel.findById(id); // user ko find kar lunga isse 
       console.log(user);
-      const { role } = user;
-      if (roles.includes(role) == true) {
+      const { role } = user;  // taking out "roles"
+      if (roles.includes(role) == true) { // checking roles => jo current role hai issme wo planRouter main tha, if true => next()
         next()
       } else {
         throw new Error("You are not authorized ");
@@ -123,27 +120,28 @@ function isAuthorized(roles) {
 
 async function forgetPassword(req, res) {
   try {
-    const { email } = req.body;
-    const user = await userModel.findOne({ email: email });
-    // const user = users[0];
+    const { email } = req.body;  // req.body se email nikala
+    const user = await userModel.findOne({ email: email }); // findOne takes input in key-value form 
+    
     if (user) {
       // console.log(user);
-      const token = user.createToken();
-      // db => save
-      // db => integrity ,consistency
-      await user.save({ validateBeforeSave: false });
+      const token = user.createToken();   // this.resetToken & this.expiresIn fns from userModel also get attached to this user  
+      
+      // db => save  // db main save karna hai therefore await and .save  
+      await user.save({ validateBeforeSave: false });  // validateBeforeSave- prevents validators to execute OR no validation will work
       // email 
-      const resetPasswordLink = `http://localhost:3000/api/users/resetPassword/${token}`
-      const emailOptions = {};
+      const resetPasswordLink = `http://localhost:3000/api/users/resetPassword/${token}`   // iss route par req. lagaenge
+
+      const emailOptions = {}; // apne options banane padenge mail bhejne ke liye
       emailOptions.html = `<h1>Please click on the link to reset your password </h1>
-      <p>${resetPasswordLink}</p>
-      `;
-      emailOptions.to = email;
-      emailOptions.from = "customersupport@everyone.com";
+      <p>${resetPasswordLink}</p>` ;
+      emailOptions.to = email; // this "email" is the one which came in req.body on /forgetPassword route
+      emailOptions.from = "customersupport@everyone.com"; // it is just a placeholder, actual email comes from email.js file
       emailOptions.subject = "Reset Password Link"
-      await Email(emailOptions);
+      await Email(emailOptions);  // yahan se emailOptions call ho jayega =>email.js => transport etc. 
+
       res.status(200).json({
-        resetPasswordLink,
+        resetPasswordLink,   //  sending this resetPasswordLink in response
         status: `Email send to ${email}`
       })
     } else {
@@ -158,13 +156,14 @@ async function forgetPassword(req, res) {
 }
 async function resetPassword(req, res) {
   try {
-    const token = req.params.token;
-    const user = await userModel.findOne({ resetToken: token });
+    const token = req.params.token; // req.params main token aaya in form of link => usse const token main daal diya  
+    const user = await userModel.findOne({ resetToken: token });  // findOne takes input in key-value form 
     if (user) {
       if (Date.now() < user.expiresIn) {
-        const { password, confirmPassword } = req.body;
+        const { password, confirmPassword } = req.body; // taking out pass & confirmPass from req.body
+        
         user.resetPasswordhelper(password, confirmPassword);
-        await user.save();
+        await user.save();    // db main save karna hai therefore await and .save  
         res.status(200).json({
           success: "user password updated login with new password"
         })

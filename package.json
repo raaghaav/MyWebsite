@@ -1,0 +1,20 @@
+{
+  "name": "myWebsite",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raaghaav/MyWebsite.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/raaghaav/MyWebsite/issues"
+  },
+  "homepage": "https://github.com/raaghaav/MyWebsite#readme"
+}
